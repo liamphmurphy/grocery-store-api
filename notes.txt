@@ -1,0 +1,27 @@
+Some misc notes and questions to myself or to the team
+
+1. Produce has the following fields: name, produce code, unit price
+    - name: alphanumeric and case insensitive
+    - produce code: sixteen chars, dashes between each four character group (e.g A12T-4GH7-QPL9-3N4M)
+    - unit price: floating point number of no more than 2 decimal places
+
+2. At first glance, there are 3 "big-picture" features
+    - Adding produce
+        -- be able to add more than one produce at a time
+    - Delete produce
+        -- be able to delete an individual produce
+        -- be able to delete multiple produces? Why not?
+    - Fetch produce
+        -- list all produce 
+        -- list single produce
+
+3. GET and POSTs will be returning and accepting JSON respectively. What's the interface for this going to be?
+    -- CLI? I don't know how well that'd work in a Docker image
+    -- Could do a basic web gui, the equivalent of a simple Flask app
+        -- There's the standard library template system: https://golang.org/pkg/html/template/
+
+4. API back-end
+    -- Could use the standard library
+    -- Tempted to go with gin: https://github.com/gin-gonic/gin
+
+5. The database is all in-memory, so I don't need to implement something like sqlite
