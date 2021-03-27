@@ -6,6 +6,7 @@ package produce_api
 
 import "errors"
 
+// for now I'll be going with a slice over a map
 type Store struct {
 	ProduceItems []Produce
 }
@@ -34,7 +35,7 @@ func (store *Store) AddProduce(newItem Produce) error {
 func (store *Store) PopulateDefaultProduce() {
 	// create default produce items
 	lettuce, _ := CreateProduce("Lettuce", "A12T-4GH7-QPL9-3N4M", 3.46)
-	peach, _ := CreateProduce("Peach", "E5T6-9UI3-TH15-QR88	", 2.99)
+	peach, _ := CreateProduce("Peach", "E5T6-9UI3-TH15-QR88", 2.99)
 	greenPepper, _ := CreateProduce("Green Pepper", "YRT6-72AS-K736-L4AR", 0.79)
 	galaApple, _ := CreateProduce("Gala Apple", "TQ4C-VV6T-75ZX-1RMR", 3.59)
 
@@ -43,4 +44,29 @@ func (store *Store) PopulateDefaultProduce() {
 	store.AddProduce(peach)
 	store.AddProduce(greenPepper)
 	store.AddProduce(galaApple)
+}
+
+// FindProduce searches the internal produce db for a produce item based on the produce code
+func (store *Store) FindProduce(code string) (int, Produce) {
+	// iterate over internal slice
+	for index, produceItem := range store.ProduceItems {
+		if produceItem.ProduceCode == code {
+			return index, produceItem
+		}
+	}
+
+	var item Produce // create empty produce item for sake of the return statement
+	return -1, item
+}
+
+// RemoveProduce takes in a code and removes the associated produce item from the internal DB
+func (store *Store) RemoveProduce(code string) []Produce {
+	// perform a standard swap and resize of the slize
+	// TODO: this method is going to get slow since we have to find the produce item first, this may prompt me to use a map later on
+	index, _ := store.FindProduce(code)
+	// perform the swap
+	var temp []Produce
+	copy(store.ProduceItems, temp)
+	temp[len(temp)-1], temp[index] = temp[index], temp[len(temp)-1]
+	return temp
 }

@@ -15,7 +15,7 @@ func TestCreateProduce(t *testing.T) {
 	}
 
 	// test the CreateProduce method
-	testProduce := produce_api.CreateProduce("testing_123", "ABCD-1234-EFGH-5678", 12.34)
+	testProduce, _ := produce_api.CreateProduce("testing_123", "ABCD-1234-EFGH-5678", 12.34)
 
 	if !expectedProduce.Compare(testProduce) {
 		t.Errorf("The test produce struct does not match the expected produce struct.")
@@ -24,7 +24,11 @@ func TestCreateProduce(t *testing.T) {
 
 func TestIsValid(t *testing.T) {
 	// create test produce struct that has valid values
-	produce := produce_api.CreateProduce("Test", "ABC1-DEF2-GHI3-JKL4", 10.00)
+	produce := produce_api.Produce{
+		Name:        "testing_123",
+		ProduceCode: "ABCD-1234-EFGH-5678",
+		Price:       12.34,
+	}
 
 	err := produce_api.IsValid(produce)
 	if err != nil {
@@ -34,7 +38,11 @@ func TestIsValid(t *testing.T) {
 
 // This is the opposite of TestIsValid; purposefully passes in an invalid produce cod
 func TestIsNotValidCode(t *testing.T) {
-	produce := produce_api.CreateProduce("Test", "ThisIsNotAValidCode", 1.00)
+	produce := produce_api.Produce{
+		Name:        "testing_123",
+		ProduceCode: "ThisIsNotAValidCode",
+		Price:       12.34,
+	}
 
 	err := produce_api.IsValid(produce)
 	if err == nil { // err should not be nil, so check if it is
@@ -44,7 +52,11 @@ func TestIsNotValidCode(t *testing.T) {
 
 // makes sure IsValid catches a negative value price
 func TestIsNotValidPrice(t *testing.T) {
-	produce := produce_api.CreateProduce("Test", "ABC1-DEF2-GHI3-JKL4", -1.00)
+	produce := produce_api.Produce{
+		Name:        "testing_123",
+		ProduceCode: "ABCD-1234-EFGH-5678",
+		Price:       -1.00,
+	}
 
 	err := produce_api.IsValid(produce)
 	if err == nil {

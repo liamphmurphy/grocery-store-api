@@ -32,3 +32,19 @@ func TestAddProduce(t *testing.T) {
 		t.Errorf("The test store does not have the state that it should have")
 	}
 }
+
+func TestFindProduce(t *testing.T) {
+	testStore := produce_api.CreateStore()
+
+	expectedProduce := produce_api.Produce{
+		Name:        "testing",
+		ProduceCode: "ABCD-1234-EFGH-5678",
+		Price:       0.0,
+	}
+	testStore.ProduceItems = append(testStore.ProduceItems, expectedProduce) // add to store's internal DB
+
+	index, produceItem := testStore.FindProduce("ABCD-1234-EFGH-5678")
+	if index < 0 || produceItem.ProduceCode != "ABCD-1234-EFGH-5678" {
+		t.Errorf("There was an error searching for the produce item, something is wrong")
+	}
+}
