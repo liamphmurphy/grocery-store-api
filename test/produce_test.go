@@ -31,3 +31,23 @@ func TestIsValid(t *testing.T) {
 		t.Errorf("IsValid believes that this produce struct is invalid, something is wrong.")
 	}
 }
+
+// This is the opposite of TestIsValid; purposefully passes in an invalid produce cod
+func TestIsNotValidCode(t *testing.T) {
+	produce := produce_api.CreateProduce("Test", "ThisIsNotAValidCode", 1.00)
+
+	err := produce_api.IsValid(produce)
+	if err == nil { // err should not be nil, so check if it is
+		t.Errorf("IsValid believes this is a valid produce struct, something is wrong.")
+	}
+}
+
+// makes sure IsValid catches a negative value price
+func TestIsNotValidPrice(t *testing.T) {
+	produce := produce_api.CreateProduce("Test", "ABC1-DEF2-GHI3-JKL4", -1.00)
+
+	err := produce_api.IsValid(produce)
+	if err == nil {
+		t.Errorf("IsValid believes this is a valid produce struct, something is wrong.")
+	}
+}
