@@ -10,7 +10,5 @@ import (
 func main() {
 	fmt.Println("test")
 
-	product := produce_api.CreateProduce("test", "test", 0.00)
-
-	fmt.Println(product)
+	produce_api.APIMain() // start the API (TODO: determine if goroutine is needed)
 }

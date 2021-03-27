@@ -29,3 +29,18 @@ func (store *Store) AddProduce(newItem Produce) error {
 		return errors.New("the state of the list of produce items is still the same after appending, something went wrong")
 	}
 }
+
+// PopulateDefaultProduce puts in some default files per the documentation
+func (store *Store) PopulateDefaultProduce() {
+	// create default produce items
+	lettuce, _ := CreateProduce("Lettuce", "A12T-4GH7-QPL9-3N4M", 3.46)
+	peach, _ := CreateProduce("Peach", "E5T6-9UI3-TH15-QR88	", 2.99)
+	greenPepper, _ := CreateProduce("Green Pepper", "YRT6-72AS-K736-L4AR", 0.79)
+	galaApple, _ := CreateProduce("Gala Apple", "TQ4C-VV6T-75ZX-1RMR", 3.59)
+
+	// populate the store
+	store.AddProduce(lettuce)
+	store.AddProduce(peach)
+	store.AddProduce(greenPepper)
+	store.AddProduce(galaApple)
+}

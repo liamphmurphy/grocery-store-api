@@ -13,7 +13,7 @@ type Produce struct {
 }
 
 // CreateProduce creates a single produce item with passed in values
-func CreateProduce(name string, code string, price float64) Produce {
+func CreateProduce(name string, code string, price float64) (Produce, error) {
 	var new_produce Produce
 
 	// assign struct values
@@ -21,7 +21,13 @@ func CreateProduce(name string, code string, price float64) Produce {
 	new_produce.ProduceCode = code
 	new_produce.Price = price
 
-	return new_produce
+	// make sure the produce struct is valid
+	err := IsValid(new_produce)
+	if err != nil {
+		return new_produce, err
+	}
+
+	return new_produce, nil
 }
 
 // Compare checks whether the current Produce struct and another Produce struct is equal based on attributes
