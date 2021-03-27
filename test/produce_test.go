@@ -21,3 +21,13 @@ func TestCreateProduce(t *testing.T) {
 		t.Errorf("The test produce struct does not match the expected produce struct.")
 	}
 }
+
+func TestIsValid(t *testing.T) {
+	// create test produce struct that has valid values
+	produce := produce_api.CreateProduce("Test", "ABC1-DEF2-GHI3-JKL4", 10.00)
+
+	err := produce_api.IsValid(produce)
+	if err != nil {
+		t.Errorf("IsValid believes that this produce struct is invalid, something is wrong.")
+	}
+}

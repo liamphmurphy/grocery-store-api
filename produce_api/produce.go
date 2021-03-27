@@ -1,5 +1,10 @@
 package produce_api
 
+import (
+	"fmt"
+	"regexp"
+)
+
 // produce represents the structure of a single produce item
 type Produce struct {
 	Name        string
@@ -19,8 +24,8 @@ func CreateProduce(name string, code string, price float64) Produce {
 	return new_produce
 }
 
-// compare checks whether the current Produce struct and another Produce struct is equal based on attributes
-func (currentProduce Produce) compare(otherProduce Produce) bool {
+// Compare checks whether the current Produce struct and another Produce struct is equal based on attributes
+func (currentProduce Produce) Compare(otherProduce Produce) bool {
 	// check memory address first
 	if &currentProduce == &otherProduce {
 		return true
@@ -37,4 +42,18 @@ func (currentProduce Produce) compare(otherProduce Produce) bool {
 
 	// if we got this far, then the two structs should be the same
 	return true
+}
+
+// IsValid confirms that the passed in produce is valid, for example that the produce code is of a valid format.
+func IsValid(produce Produce) error {
+	// check regexp matches desired format for the produce code
+	matched, _ := regexp.MatchString("[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}", produce.ProduceCode)
+
+	// cycle through validity checks
+	if !matched {
+		return fmt.Errorf("the produce code: %v is not valid", produce.ProduceCode)
+	} else if produce.Price < 0.0 {
+		return fmt.Errorf("the product price %v is negative, please use a positive floating point number", produce.Price)
+	}
+	return nil
 }
