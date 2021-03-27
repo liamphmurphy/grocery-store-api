@@ -6,9 +6,11 @@ import (
 	"github.com/murnux/grocery-store-api/produce_api"
 )
 
+// this is at a "test driver" stage, still determining the best way to interface with the api
 func main() {
 	fmt.Println("test")
 
-	prod := produce_api.Produce
-	fmt.Println(prod)
+	product := produce_api.CreateProduce("test", "test", 0.00)
+
+	fmt.Println(product)
 }
