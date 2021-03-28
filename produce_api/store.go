@@ -4,7 +4,11 @@
 
 package produce_api
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // for now I'll be going with a slice over a map
 type Store struct {
@@ -48,6 +52,7 @@ func (store *Store) PopulateDefaultProduce() {
 
 // FindProduce searches the internal produce db for a produce item based on the produce code
 func (store *Store) FindProduce(code string) (int, Produce) {
+	code = strings.ToUpper(code)
 	// iterate over internal slice
 	for index, produceItem := range store.ProduceItems {
 		if produceItem.ProduceCode == code {
@@ -60,13 +65,20 @@ func (store *Store) FindProduce(code string) (int, Produce) {
 }
 
 // RemoveProduce takes in a code and removes the associated produce item from the internal DB
-func (store *Store) RemoveProduce(code string) []Produce {
-	// perform a standard swap and resize of the slize
-	// TODO: this method is going to get slow since we have to find the produce item first, this may prompt me to use a map later on
+func (store *Store) RemoveProduce(code string) ([]Produce, error) {
+	// perform a standard swap and resize of the slice
 	index, _ := store.FindProduce(code)
+	fmt.Println("index", index)
+	temp := make([]Produce, len(store.ProduceItems)) // need to allocate enough space for copy to wrok
+
+	if index == -1 {
+		return temp, errors.New("could not find the produce item")
+	}
+	// avoid mutating original DB until changes are successfully made
+	copy(temp, store.ProduceItems)
+	fmt.Println("temp", temp, len(temp))
+
 	// perform the swap
-	var temp []Produce
-	copy(store.ProduceItems, temp)
 	temp[len(temp)-1], temp[index] = temp[index], temp[len(temp)-1]
-	return temp
+	return temp[:len(temp)-1], nil
 }

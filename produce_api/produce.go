@@ -3,13 +3,14 @@ package produce_api
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 // produce represents the structure of a single produce item
 type Produce struct {
-	Name        string
-	ProduceCode string
-	Price       float64
+	Name        string  `json:"Name"`
+	ProduceCode string  `json:"ProduceCode"`
+	Price       float64 `json:"Price"`
 }
 
 // CreateProduce creates a single produce item with passed in values
@@ -18,7 +19,7 @@ func CreateProduce(name string, code string, price float64) (Produce, error) {
 
 	// assign struct values
 	new_produce.Name = name
-	new_produce.ProduceCode = code
+	new_produce.ProduceCode = strings.ToUpper(code) // always ensure the produce code is upper case
 	new_produce.Price = price
 
 	// make sure the produce struct is valid
