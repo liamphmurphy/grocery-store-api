@@ -24,12 +24,18 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 
 	// create a new slice to hold all of the returned produce items
 	var foundProduce []Produce
+	// make a produce struct channel that is big enough to contain the number of codes inputted
+	produceChan := make(chan Produce, len(params["code"]))
+	indexChan := make(chan int)
 	for _, code := range params["code"] {
-		index, produceItem := store.FindProduce(code)
-		if index >= 0 { // if no error returned, then assume the product is valid
-			foundProduce = append(foundProduce, produceItem)
+		// create channels necessary for the goroutine
+		go store.FindProduceChannel(code, produceChan, indexChan)
+		if <-indexChan != -1 { // if no error returned, then assume the product is valid
+			foundProduce = append(foundProduce, <-produceChan)
 		}
 	}
+	close(produceChan)
+	close(indexChan)
 
 	if len(foundProduce) > 0 { // return produce data if any was found
 		c.JSON(http.StatusOK, foundProduce)
@@ -47,7 +53,6 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 
 	fmt.Println("list", list)
 	for _, produce := range list.List {
-		fmt.Println(produce)
 		err := store.AddProduce(produce) // add the new produce to the db
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode))
