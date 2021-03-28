@@ -25,6 +25,11 @@ func CreateStore() *Store {
 }
 
 func (store *Store) AddProduce(newItem Produce) error {
+	err := IsValid(newItem)
+	if err != nil {
+		return err // if something is wrong with the produce item, pass on the error
+	}
+
 	initialSize := len(store.ProduceItems) // used for comparing length after appending later
 
 	store.ProduceItems = append(store.ProduceItems, newItem)

@@ -35,7 +35,7 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, foundProduce)
 	} else {
 		// return that the request was processed, but no data was found
-		c.JSON(http.StatusNoContent, gin.H{"Warning": "No produce items matched the provided produce code(s)."})
+		c.String(http.StatusNoContent, "Could not find any produce items matching the provide produce codes.")
 	}
 }
 
@@ -50,7 +50,7 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 		fmt.Println(produce)
 		err := store.AddProduce(produce) // add the new produce to the db
 		if err != nil {
-			c.String(http.StatusBadRequest, "The item(s) have not been added, please ensure the format of the produce item is corrected.")
+			c.String(http.StatusBadRequest, fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode))
 		}
 	}
 
