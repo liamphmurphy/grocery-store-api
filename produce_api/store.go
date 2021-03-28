@@ -30,6 +30,11 @@ func (store *Store) AddProduce(newItem Produce) error {
 		return err // if something is wrong with the produce item, pass on the error
 	}
 
+	i, _ := store.FindProduce(newItem.ProduceCode)
+	if i >= 0 { // check if there is an item with this produce code already
+		return errors.New("an item with this produce code already exists")
+	}
+
 	initialSize := len(store.ProduceItems) // used for comparing length after appending later
 
 	store.ProduceItems = append(store.ProduceItems, newItem)

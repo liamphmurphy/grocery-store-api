@@ -3,6 +3,7 @@ package produce_api
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ type ProduceList struct {
 	List []Produce `json:"Produce"`
 }
 
-// getaAllHandler returns the JSON of all produce items
+// getAllHandler returns the JSON of all produce items
 func (store *Store) getAllHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, store.ProduceItems)
 }
@@ -24,7 +25,7 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 
 	// create a new slice to hold all of the returned produce items
 	var foundProduce []Produce
-	// make a produce struct channel that is big enough to contain the number of codes inputted
+	// make a produce struct channel that is big enough to contain the number of codes requested
 	produceChan := make(chan Produce, len(params["code"]))
 	indexChan := make(chan int)
 	for _, code := range params["code"] {
@@ -49,15 +50,15 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 func (store *Store) addProduceHandler(c *gin.Context) {
 	var list ProduceList
 	c.BindJSON(&list) // bind JSON body to Produce struct
-	fmt.Println(list)
 
-	fmt.Println("list", list)
+	errChan := make(chan error) // make error channel
 	for _, produce := range list.List {
-		err := store.AddProduce(produce) // add the new produce to the db
-		if err != nil {
+		go store.AddProduceChannel(produce, errChan) // add the new produce to the db
+		if <-errChan != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode))
 		}
 	}
+	close(errChan)
 
 	c.String(http.StatusAccepted, "The item(s) have been added")
 }
@@ -82,7 +83,17 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 	}
 
 	preLength := len(store.ProduceItems)
-	store.ProduceItems, _ = store.RemoveProduce(targetCode[0]) // delete one item
+	produceList := make(chan []Produce, len(store.ProduceItems)-1)
+	go store.RemoveProduceChannel(targetCode[0], produceList) // delete one item
+
+	select {
+	case newList := <-produceList: // if channel receives data, update the internal DB
+		store.ProduceItems = newList
+	case <-time.After(1 * time.Second): // item not found so the channel is not updated, exit
+		c.JSON(http.StatusNoContent, "The item was not found, so no deletion occurred.")
+	}
+
+	close(produceList)
 
 	// check if the internal slice was adjusted at all
 	if preLength == len(store.ProduceItems) {
