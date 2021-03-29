@@ -72,6 +72,19 @@ curl -X "DELETE" "http://localhost:8080/produce/delete?Produce%20Code=TQ4C-VV6T-
 
 ## How to Run
 
+The simplest way to run the app is to pull the latest image from docker:
+
+```
+docker run --rm -p 8080:8080 murphylsou/grocery-store-api
+```
+
+You can also specify a custom port by setting a PORT environment variable for the container:
+
+```
+export PORT=3030
+docker run --rm -p $PORT:$PORT --env PORT=$PORT murphylsou/grocery-store-api
+```
+
 To run locally without a docker container, in the root directory of the project:
 
 ```
