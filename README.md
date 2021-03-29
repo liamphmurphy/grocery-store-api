@@ -56,6 +56,7 @@ To create your own JSON objects and to compact them into one line, a good tool t
 ### DELETE
 
 **/produce/delete**
+
 This allows the caller to delete one or more produce items. Per the specifications, the expected URL parameter is "Produce Code". When using curl, the space between "Produce" and "Code" should be the string "%20".
 
 Example (CURL) to delete one item:
