@@ -38,6 +38,7 @@ func TestIsValid(t *testing.T) {
 
 // This is the opposite of TestIsValid; purposefully passes in an invalid produce cod
 func TestIsNotValidCode(t *testing.T) {
+	// create produce item with an invalid code
 	produce := produce_api.Produce{
 		Name:        "testing_123",
 		ProduceCode: "ThisIsNotAValidCode",
@@ -52,6 +53,7 @@ func TestIsNotValidCode(t *testing.T) {
 
 // makes sure IsValid catches a negative value price
 func TestIsNotValidPrice(t *testing.T) {
+	// create produce item with an invalid price
 	produce := produce_api.Produce{
 		Name:        "testing_123",
 		ProduceCode: "ABCD-1234-EFGH-5678",

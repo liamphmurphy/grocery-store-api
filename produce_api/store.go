@@ -6,7 +6,6 @@ package produce_api
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -78,7 +77,6 @@ func (store *Store) FindProduce(code string) (int, Produce) {
 func (store *Store) RemoveProduce(code string) ([]Produce, error) {
 	// perform a standard swap and resize of the slice
 	index, _ := store.FindProduce(code)
-	fmt.Println("index", index)
 	temp := make([]Produce, len(store.ProduceItems)) // need to allocate enough space for copy to wrok
 
 	if index == -1 {
@@ -86,7 +84,6 @@ func (store *Store) RemoveProduce(code string) ([]Produce, error) {
 	}
 	// avoid mutating original DB until changes are successfully made
 	copy(temp, store.ProduceItems)
-	fmt.Println("temp", temp, len(temp))
 
 	// perform the swap
 	temp[len(temp)-1], temp[index] = temp[index], temp[len(temp)-1]
