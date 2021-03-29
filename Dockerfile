@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:alpine
 LABEL maintainer="liamphmurphy@gmail.com"
 
 # set working dir

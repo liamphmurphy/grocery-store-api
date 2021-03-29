@@ -3,6 +3,7 @@ package produce_api
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -118,16 +119,22 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 	}
 }
 
+// display a message when user accesses the root page, telling them to refer to the README for info.
+func rootHandler(c *gin.Context) {
+	c.String(http.StatusOK, "Please refer to the README for information on the current endpoints.")
+}
+
 // APIMain acts as the root for the REST API.
 func APIMain(store *Store) {
 	router := gin.Default()
 	router.Use(cors.Default())
 
 	/* decided to use the /produce/ prefix to each API endpoint, even if it isn't strictly necessary.
-	my thinking is that in the future that if this built for production use, we may want another set of endpoints
+	my thinking is that in the future that if this is built for production use, we may want another set of endpoints
 	for manipulating a store e.g /store/.
 	*/
 	// API GET endpoints
+	router.GET("/", rootHandler)
 	router.GET("/produce/getall", store.getAllHandler)
 	router.GET("/produce/getitem", store.getProduceHandler)
 
@@ -136,5 +143,13 @@ func APIMain(store *Store) {
 	router.DELETE("/produce/delete", store.deleteProduceHandler)
 
 	fmt.Println("API has started, please refer to the README for information on the current endpoints.")
+
+	// create port variable that initially assumes default 8080 port, but changes if the PORT env variable is setup
+	port := "8080"
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	fmt.Printf("API is running at: localhost:%v\n", port)
+
 	router.Run()
 }
