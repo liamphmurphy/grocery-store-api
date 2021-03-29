@@ -13,6 +13,7 @@ RUN go get -d -v ./... && go install -v ./...
 # compile the executable
 RUN go build
 
-EXPOSE 8080
+# takes gin out of the default debug mode
+ENV GIN_MODE=release
 
 CMD ["grocery-store-api"]

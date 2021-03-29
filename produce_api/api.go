@@ -117,12 +117,9 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 }
 
 // APIMain acts as the root for the REST API.
-func APIMain() {
+func APIMain(store *Store) {
 	router := gin.Default()
 	router.Use(cors.Default())
-
-	store := CreateStore()         // create store struct model for use in the API
-	store.PopulateDefaultProduce() // populate default produce items as specified in the specifications
 
 	/* decided to use the /produce/ prefix to each API endpoint, even if it isn't strictly necessary.
 	my thinking is that in the future that if this built for production use, we may want another set of endpoints

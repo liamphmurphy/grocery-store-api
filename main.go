@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/murnux/grocery-store-api/produce_api"
 )
 
-// this is at a "test driver" stage, still determining the best way to interface with the api
 func main() {
-	fmt.Println("test")
+	store := produce_api.CreateStore() // create store struct model for use in the API
+	store.PopulateDefaultProduce()     // populate default produce items as specified in the specifications
 
-	produce_api.APIMain() // start the API (TODO: determine if goroutine is needed)
+	produce_api.APIMain(store) // start the API (TODO: determine if goroutine is needed)
 }
