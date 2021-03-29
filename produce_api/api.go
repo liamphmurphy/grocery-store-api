@@ -35,6 +35,8 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 			foundProduce = append(foundProduce, <-produceChan)
 		}
 	}
+
+	// be kind, close the channels
 	close(produceChan)
 	close(indexChan)
 
@@ -66,7 +68,7 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 // deleteProduceHandler handles the DELETE request when a client requests to delete a produce item
 func (store *Store) deleteProduceHandler(c *gin.Context) {
 	params := c.Request.URL.Query()
-	targetCode := params["Produce Code"]
+	targetCodes := params["Produce Code"]
 
 	// if the internal slice is empty, no point in continuing
 	if len(store.ProduceItems) == 0 {
@@ -74,23 +76,26 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 		return
 	}
 
-	// confirm the passed in code is of a valid format
-	// make a temporary Produce struct to pass into IsValid
-	err := IsValid(Produce{Name: "Test", ProduceCode: targetCode[0], Price: 1.00})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "the inputted codes is of an invalid format")
-		return
-	}
+	// make a channel big enough to hold the current list of produce items
+	produceList := make(chan []Produce, len(store.ProduceItems))
+	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
+	for _, code := range targetCodes {
+		// confirm the passed in code is of a valid format
+		// make a temporary Produce struct to pass into IsValid
+		err := IsValid(Produce{Name: "Test", ProduceCode: code, Price: 1.00})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "the inputted codes is of an invalid format")
+			return
+		}
 
-	preLength := len(store.ProduceItems)
-	produceList := make(chan []Produce, len(store.ProduceItems)-1)
-	go store.RemoveProduceChannel(targetCode[0], produceList) // delete one item
+		go store.RemoveProduceChannel(code, produceList) // delete one item
 
-	select {
-	case newList := <-produceList: // if channel receives data, update the internal DB
-		store.ProduceItems = newList
-	case <-time.After(1 * time.Second): // item not found so the channel is not updated, exit
-		c.JSON(http.StatusNoContent, "The item was not found, so no deletion occurred.")
+		select {
+		case newList := <-produceList: // if channel receives data, update the internal DB
+			store.ProduceItems = newList
+		case <-time.After(1 * time.Second): // item not found so the channel is not updated, exit
+			c.JSON(http.StatusNoContent, "The item was not found, so no deletion occurred.")
+		}
 	}
 
 	close(produceList)
@@ -110,6 +115,10 @@ func APIMain() {
 	store := CreateStore()         // create store struct model for use in the API
 	store.PopulateDefaultProduce() // populate default produce items as specified in the specifications
 
+	/* decided to use the /produce/ prefix to each API endpoint, even if it isn't strictly necessary.
+	my thinking is that in the future that if this built for production use, we may want another set of endpoints
+	for manipulating a store e.g /store/.
+	*/
 	// API GET endpoints
 	router.GET("/produce/getall", store.getAllHandler)
 	router.GET("/produce/getitem", store.getProduceHandler)
