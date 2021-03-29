@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Needed to hold a list of produce items when accepting JSON in addProduceHandler
 type ProduceList struct {
 	List []Produce `json:"Produce"`
 }
@@ -25,6 +26,7 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 
 	// create a new slice to hold all of the returned produce items
 	var foundProduce []Produce
+
 	// make a produce struct channel that is big enough to contain the number of codes requested
 	produceChan := make(chan Produce, len(params["code"]))
 	indexChan := make(chan int)
@@ -53,7 +55,8 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 	var list ProduceList
 	c.BindJSON(&list) // bind JSON body to Produce struct
 
-	errChan := make(chan error) // make error channel
+	errChan := make(chan error)          // make error channel
+	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
 	for _, produce := range list.List {
 		go store.AddProduceChannel(produce, errChan) // add the new produce to the db
 		if <-errChan != nil {
@@ -62,7 +65,12 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 	}
 	close(errChan)
 
-	c.String(http.StatusAccepted, "The item(s) have been added")
+	// check if the internal slice was adjusted at all
+	if preLength == len(store.ProduceItems) {
+		c.String(http.StatusBadRequest, "No items were added")
+	} else {
+		c.String(http.StatusAccepted, "The item(s) have been added")
+	}
 }
 
 // deleteProduceHandler handles the DELETE request when a client requests to delete a produce item
@@ -108,6 +116,7 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 	}
 }
 
+// APIMain acts as the root for the REST API.
 func APIMain() {
 	router := gin.Default()
 	router.Use(cors.Default())
