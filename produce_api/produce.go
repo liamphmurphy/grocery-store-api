@@ -2,6 +2,7 @@ package produce_api
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 )
@@ -20,7 +21,7 @@ func CreateProduce(name string, code string, price float64) (Produce, error) {
 	// assign struct values
 	new_produce.Name = name
 	new_produce.ProduceCode = strings.ToUpper(code) // always ensure the produce code is upper case
-	new_produce.Price = price
+	new_produce.Price = math.Round(price/0.01) * 0.01
 
 	// make sure the produce struct is valid
 	err := IsValid(new_produce)

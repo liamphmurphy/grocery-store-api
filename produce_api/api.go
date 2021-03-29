@@ -16,6 +16,7 @@ type ProduceList struct {
 
 // getAllHandler returns the JSON of all produce items
 func (store *Store) getAllHandler(c *gin.Context) {
+	fmt.Println(store.ProduceItems)
 	c.JSON(http.StatusOK, store.ProduceItems)
 }
 
@@ -58,7 +59,8 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 	errChan := make(chan error)          // make error channel
 	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
 	for _, produce := range list.List {
-		go store.AddProduceChannel(produce, errChan) // add the new produce to the db
+		produce, _ = CreateProduce(produce.Name, produce.ProduceCode, produce.Price) // recreate produce item to ensure correct formats
+		go store.AddProduceChannel(produce, errChan)                                 // add the new produce to the db
 		if <-errChan != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode))
 		}
@@ -133,5 +135,6 @@ func APIMain(store *Store) {
 	router.POST("/produce/add", store.addProduceHandler)
 	router.DELETE("/produce/delete", store.deleteProduceHandler)
 
+	fmt.Println("API has started, please refer to the README for information on the current endpoints.")
 	router.Run()
 }
