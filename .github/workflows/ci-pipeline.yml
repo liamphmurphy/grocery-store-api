@@ -53,5 +53,5 @@ jobs:
           # craft email
           subject: Latest build in workflow ${{ github.workflow }} in ${{ github.repository }} exited with ${{ job.status }}
           body: Repo -- ${{ github.repository }}\nWorkflow -- ${{ github.workflow }}\nStatus -- ${{ job.status }}\nURL -- https://github.com/murnux/grocery-store-api/actions/workflows/ci-pipeline.yml
-          to: liamphmurphy@gmail.com
+          to: ${{ secrets.WORKFLOW_RECIPIENTS }}
           from: GitHub Workflow
