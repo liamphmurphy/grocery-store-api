@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Docker Container
         run: |
-          docker build -f Dockerfile -t grocery-store-api .'
+          docker build -f Dockerfile -t grocery-store-api .
           
       # push to the docker hub repo
       - name: Push to Docker Hub
