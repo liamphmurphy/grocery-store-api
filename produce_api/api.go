@@ -15,10 +15,15 @@ type ProduceList struct {
 	List []Produce `json:"Produce"`
 }
 
+// ResultSet defines the structure of the JSON payload returned to users
+type ResultSet struct {
+	Status  string      `json:"status"`  // used to give some kind of feedback to the user
+	Results interface{} `json:"results"` // let the results payload be adaptable
+}
+
 // getAllHandler returns the JSON of all produce items
 func (store *Store) getAllHandler(c *gin.Context) {
-	fmt.Println(store.ProduceItems)
-	c.JSON(http.StatusOK, store.ProduceItems)
+	c.JSON(http.StatusOK, ResultSet{Status: "", Results: store.ProduceItems})
 }
 
 // getProduceHandler returns the JSON of one or more produce items based on URL paramaters
@@ -30,9 +35,9 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 	var foundProduce []Produce
 
 	// make a produce struct channel that is big enough to contain the number of codes requested
-	produceChan := make(chan Produce, len(params["code"]))
+	produceChan := make(chan Produce, len(params["Produce Code"]))
 	indexChan := make(chan int)
-	for _, code := range params["code"] {
+	for _, code := range params["Produce Code"] {
 		// create channels necessary for the goroutine
 		go store.FindProduceChannel(code, produceChan, indexChan)
 		if <-indexChan != -1 { // if no error returned, then assume the product is valid
@@ -45,10 +50,10 @@ func (store *Store) getProduceHandler(c *gin.Context) {
 	close(indexChan)
 
 	if len(foundProduce) > 0 { // return produce data if any was found
-		c.JSON(http.StatusOK, foundProduce)
+		c.JSON(http.StatusOK, ResultSet{Status: "", Results: foundProduce})
 	} else {
 		// return that the request was processed, but no data was found
-		c.String(http.StatusNoContent, "Could not find any produce items matching the provide produce codes.")
+		c.JSON(http.StatusOK, ResultSet{Status: "No data was found from the query.", Results: foundProduce})
 	}
 }
 
@@ -63,16 +68,17 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 		produce, _ = CreateProduce(produce.Name, produce.ProduceCode, produce.Price) // recreate produce item to ensure correct formats
 		go store.AddProduceChannel(produce, errChan)                                 // add the new produce to the db
 		if <-errChan != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode))
+			c.JSON(http.StatusBadRequest, ResultSet{Status: fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode), Results: nil})
+			return
 		}
 	}
 	close(errChan)
 
 	// check if the internal slice was adjusted at all
 	if preLength == len(store.ProduceItems) {
-		c.String(http.StatusBadRequest, "No items were added")
+		c.JSON(http.StatusOK, ResultSet{Status: "No items were added", Results: nil})
 	} else {
-		c.String(http.StatusAccepted, "The item(s) have been added")
+		c.JSON(http.StatusAccepted, ResultSet{Status: "The item(s) have been added", Results: list})
 	}
 }
 
@@ -83,13 +89,14 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 
 	// if the internal slice is empty, no point in continuing
 	if len(store.ProduceItems) == 0 {
-		c.JSON(http.StatusNoContent, "There are currently no produce items.")
+		c.JSON(http.StatusOK, ResultSet{Status: "There are currently no produce items.", Results: nil})
 		return
 	}
 
 	// make a channel big enough to hold the current list of produce items
 	produceList := make(chan []Produce, len(store.ProduceItems))
 	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
+	var notFound []string
 	for _, code := range targetCodes {
 		// confirm the passed in code is of a valid format
 		// make a temporary Produce struct to pass into IsValid
@@ -104,18 +111,25 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 		select {
 		case newList := <-produceList: // if channel receives data, update the internal DB
 			store.ProduceItems = newList
-		case <-time.After(1 * time.Second): // item not found so the channel is not updated, exit
-			c.JSON(http.StatusNoContent, "The item was not found, so no deletion occurred.")
+		case <-time.After(1 * time.Second): // item not found so the channel is not updated
+			notFound = append(notFound, code)
 		}
 	}
 
 	close(produceList)
 
+	fmt.Println(preLength, len(store.ProduceItems))
 	// check if the internal slice was adjusted at all
 	if preLength == len(store.ProduceItems) {
-		c.JSON(http.StatusNoContent, "The item was not found, so no deletion occurred.")
+		c.JSON(http.StatusBadRequest, ResultSet{Status: "No items were deleted, please make sure your code(s) are inputted correctly.", Results: nil})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"status": "Delete successful", "produceList": store.ProduceItems})
+		// default status message, assuming notFound is empty
+		status := "Delete successful, results shows the current state of the DB."
+		if len(notFound) > 0 {
+			status = fmt.Sprintf("While some deletions were successful, some were not. Note this list of items that were not found: %v", notFound)
+		}
+		// return whatever status is current and the state of the ProduceItems slice
+		c.JSON(http.StatusOK, ResultSet{Status: status, Results: store.ProduceItems})
 	}
 }
 

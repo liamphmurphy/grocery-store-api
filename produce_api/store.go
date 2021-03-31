@@ -23,20 +23,22 @@ func CreateStore() *Store {
 	return &store
 }
 
+// AddProduce adds a new produce item to the internal slice, implements the 'add' operation
 func (store *Store) AddProduce(newItem Produce) error {
 	err := IsValid(newItem)
 	if err != nil {
 		return err // if something is wrong with the produce item, pass on the error
 	}
 
-	i, _ := store.FindProduce(newItem.ProduceCode)
-	if i >= 0 { // check if there is an item with this produce code already
+	index, _ := store.FindProduce(newItem.ProduceCode)
+	if index >= 0 { // check if there is an item with this produce code already
 		return errors.New("an item with this produce code already exists")
 	}
 
 	initialSize := len(store.ProduceItems) // used for comparing length after appending later
 
 	store.ProduceItems = append(store.ProduceItems, newItem)
+	// check if the slice has increased by one element
 	if len(store.ProduceItems) == initialSize+1 {
 		return nil // indicate a successful append
 	} else {
@@ -69,13 +71,13 @@ func (store *Store) FindProduce(code string) (int, Produce) {
 		}
 	}
 
-	var item Produce // create empty produce item for sake of the return statement
+	var item Produce // create empty produce item for sake of the return statement, will be nil
 	return -1, item
 }
 
 // RemoveProduce takes in a code and removes the associated produce item from the internal DB
 func (store *Store) RemoveProduce(code string) ([]Produce, error) {
-	// perform a standard swap and resize of the slice
+	// attempt to find the produce and its associated index
 	index, _ := store.FindProduce(code)
 	temp := make([]Produce, len(store.ProduceItems)) // need to allocate enough space for copy to wrok
 
@@ -85,7 +87,7 @@ func (store *Store) RemoveProduce(code string) ([]Produce, error) {
 	// avoid mutating original DB until changes are successfully made
 	copy(temp, store.ProduceItems)
 
-	// perform the swap
+	// perform a standard swap and resize of the slice
 	temp[len(temp)-1], temp[index] = temp[index], temp[len(temp)-1]
 	return temp[:len(temp)-1], nil
 }
