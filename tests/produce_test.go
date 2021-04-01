@@ -9,9 +9,9 @@ import (
 func TestCreateProduce(t *testing.T) {
 	// create expected struct
 	expectedProduce := produce_api.Produce{
-		Name:        "testing_123",
-		ProduceCode: "ABCD-1234-EFGH-5678",
-		Price:       12.34,
+		Name:  "testing_123",
+		Code:  "ABCD-1234-EFGH-5678",
+		Price: 12.34,
 	}
 
 	// test the CreateProduce method
@@ -25,9 +25,9 @@ func TestCreateProduce(t *testing.T) {
 func TestIsValid(t *testing.T) {
 	// create test produce struct that has valid values
 	produce := produce_api.Produce{
-		Name:        "testing_123",
-		ProduceCode: "ABCD-1234-EFGH-5678",
-		Price:       12.34,
+		Name:  "testing_123",
+		Code:  "ABCD-1234-EFGH-5678",
+		Price: 12.34,
 	}
 
 	err := produce_api.IsValid(produce)
@@ -40,9 +40,9 @@ func TestIsValid(t *testing.T) {
 func TestIsNotValidCode(t *testing.T) {
 	// create produce item with an invalid code
 	produce := produce_api.Produce{
-		Name:        "testing_123",
-		ProduceCode: "ThisIsNotAValidCode",
-		Price:       12.34,
+		Name:  "testing_123",
+		Code:  "ThisIsNotAValidCode",
+		Price: 12.34,
 	}
 
 	err := produce_api.IsValid(produce)
@@ -55,9 +55,9 @@ func TestIsNotValidCode(t *testing.T) {
 func TestIsNotValidPrice(t *testing.T) {
 	// create produce item with an invalid price
 	produce := produce_api.Produce{
-		Name:        "testing_123",
-		ProduceCode: "ABCD-1234-EFGH-5678",
-		Price:       -1.00,
+		Name:  "testing_123",
+		Code:  "ABCD-1234-EFGH-5678",
+		Price: -1.00,
 	}
 
 	err := produce_api.IsValid(produce)
