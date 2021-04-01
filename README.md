@@ -41,7 +41,7 @@ This allows the caller to add one or more produce items. The API expects a JSON 
 Example (CURL) for adding "Banana" and "Red Onion" produce items:
 
 ```
-curl -X "POST" http://localhost:8080/produce/add -H "Accept: application/json" -H "Content-Type: application/json" -d '{"Produce":[{"Name":"Banana","ProduceCode":"B123-4G2A-QPL9-3N2A","Price":1.19},{"Name":"Red Onion","ProduceCode":"1234-ABCD-QPL9-3N4M","Price":2.24}]}'
+curl -X "POST" http://localhost:8080/produce/add -H "Accept: application/json" -H "Content-Type: application/json" -d '{"Produce":[{"Name":"Banana","Code":"B123-4G2A-QPL9-3N2A","Price":1.19},{"Name":"Red Onion","Code":"1234-ABCD-QPL9-3N4M","Price":2.24}]}'
 ```
 
 On the event of an error (such as using a code that doesn't follow the correct format structure as seen in the below example), you will get a response such as:
@@ -76,14 +76,14 @@ curl -X "DELETE" "http://localhost:8080/produce/delete?Produce%20Code=TQ4C-VV6T-
 The simplest way to run the app is to pull the latest image from docker:
 
 ```
-docker run --rm -p 8080:8080 murphylsou/grocery-store-api
+docker run --rm -p 8080:8080 murphylsou/grocery-store-api:main
 ```
 
 You can also specify a custom port by setting a PORT environment variable for the container:
 
 ```
 export PORT=3030
-docker run --rm -p $PORT:$PORT --env PORT=$PORT murphylsou/grocery-store-api
+docker run --rm -p $PORT:$PORT --env PORT=$PORT murphylsou/grocery-store-api:main
 ```
 
 To run locally without a docker container, in the root directory of the project:
