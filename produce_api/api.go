@@ -62,13 +62,18 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 	var list ProduceList
 	c.BindJSON(&list) // bind JSON body to Produce struct
 
+	if len(list.List) == 0 {
+		c.JSON(http.StatusBadRequest, ResultSet{Status: "No produce items were received, please double check your JSON payload.", Results: nil})
+		return
+	}
+
 	errChan := make(chan error)          // make error channel
 	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
 	for _, produce := range list.List {
-		produce, _ = CreateProduce(produce.Name, produce.ProduceCode, produce.Price) // recreate produce item to ensure correct formats
-		go store.AddProduceChannel(produce, errChan)                                 // add the new produce to the db
+		produce, _ = CreateProduce(produce.Name, produce.Code, produce.Price) // recreate produce item to ensure correct formats
+		go store.AddProduceChannel(produce, errChan)                          // add the new produce to the db
 		if <-errChan != nil {
-			c.JSON(http.StatusBadRequest, ResultSet{Status: fmt.Sprintf("Could not add the item: %v\n", produce.ProduceCode), Results: nil})
+			c.JSON(http.StatusBadRequest, ResultSet{Status: fmt.Sprintf("Could not add the item: %v\n", produce.Code), Results: nil})
 			return
 		}
 	}
@@ -78,7 +83,7 @@ func (store *Store) addProduceHandler(c *gin.Context) {
 	if preLength == len(store.ProduceItems) {
 		c.JSON(http.StatusOK, ResultSet{Status: "No items were added", Results: nil})
 	} else {
-		c.JSON(http.StatusAccepted, ResultSet{Status: "The item(s) have been added", Results: list})
+		c.JSON(http.StatusOK, ResultSet{Status: "The item(s) have been added", Results: list})
 	}
 }
 
@@ -97,10 +102,11 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 	produceList := make(chan []Produce, len(store.ProduceItems))
 	preLength := len(store.ProduceItems) // get length of slice before changes, used for a check later on
 	var notFound []string
+
 	for _, code := range targetCodes {
 		// confirm the passed in code is of a valid format
 		// make a temporary Produce struct to pass into IsValid
-		err := IsValid(Produce{Name: "Test", ProduceCode: code, Price: 1.00})
+		err := IsValid(Produce{Name: "Test", Code: code, Price: 1.00})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, "the inputted codes is of an invalid format")
 			return
@@ -135,11 +141,27 @@ func (store *Store) deleteProduceHandler(c *gin.Context) {
 
 // display a message when user accesses the root page, telling them to refer to the README for info.
 func rootHandler(c *gin.Context) {
-	c.String(http.StatusOK, "Please refer to the README for information on the current endpoints.")
+	c.JSON(http.StatusOK, ResultSet{Status: "Please refer to the README for information on the current endpoints.", Results: nil})
 }
 
 // APIMain acts as the root for the REST API.
 func APIMain(store *Store) {
+	r := CreateRouter(store)
+
+	fmt.Println("API has started, please refer to the README for information on the current endpoints.")
+
+	// create port variable that initially assumes default 8080 port, but changes if the PORT env variable is setup
+	port := "8080"
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	fmt.Printf("API is running at: localhost:%v\n", port)
+
+	r.Run()
+}
+
+// CreateRouter creates and defines the gin.Engine object for running the grocery store API service
+func CreateRouter(store *Store) *gin.Engine {
 	router := gin.Default()
 	router.Use(cors.Default())
 
@@ -156,14 +178,5 @@ func APIMain(store *Store) {
 	router.POST("/produce/add", store.addProduceHandler)
 	router.DELETE("/produce/delete", store.deleteProduceHandler)
 
-	fmt.Println("API has started, please refer to the README for information on the current endpoints.")
-
-	// create port variable that initially assumes default 8080 port, but changes if the PORT env variable is setup
-	port := "8080"
-	if os.Getenv("PORT") != "" {
-		port = os.Getenv("PORT")
-	}
-	fmt.Printf("API is running at: localhost:%v\n", port)
-
-	router.Run()
+	return router
 }

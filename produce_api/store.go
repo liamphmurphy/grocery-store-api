@@ -14,6 +14,7 @@ type Store struct {
 	ProduceItems []Produce
 }
 
+// CreateStore initializes a Store struct
 func CreateStore() *Store {
 	// create empty slice of Produce items
 	var produceItems []Produce
@@ -30,7 +31,7 @@ func (store *Store) AddProduce(newItem Produce) error {
 		return err // if something is wrong with the produce item, pass on the error
 	}
 
-	index, _ := store.FindProduce(newItem.ProduceCode)
+	index, _ := store.FindProduce(newItem.Code)
 	if index >= 0 { // check if there is an item with this produce code already
 		return errors.New("an item with this produce code already exists")
 	}
@@ -66,7 +67,7 @@ func (store *Store) FindProduce(code string) (int, Produce) {
 	code = strings.ToUpper(code)
 	// iterate over internal slice
 	for index, produceItem := range store.ProduceItems {
-		if produceItem.ProduceCode == code {
+		if produceItem.Code == code {
 			return index, produceItem
 		}
 	}
