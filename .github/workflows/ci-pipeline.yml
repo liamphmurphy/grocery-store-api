@@ -21,10 +21,8 @@ jobs:
       - uses: actions/setup-go@v2
 
       # installs dependencies, builds and runs tests
-      - name: Build project and run tests
+      - name: Run tests
         run: |
-          go get -d -v ./... && go install -v ./...
-          go build
           go test -v ./tests/
 
       - name: Build Docker Container
@@ -42,7 +40,7 @@ jobs:
           
       # notify the team when the pipeline fails
       - name: Send Email
-        if: always()
+        if: failure()
         uses: dawidd6/action-send-mail@v2
         with:
           # use gmail account
