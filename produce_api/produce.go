@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// produce represents the structure of a single produce item
+// Produce represents the structure of a single produce item
 type Produce struct {
 	Name  string  `json:"Name"`
 	Code  string  `json:"Code"`
