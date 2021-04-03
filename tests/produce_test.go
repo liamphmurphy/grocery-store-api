@@ -22,46 +22,33 @@ func TestCreateProduce(t *testing.T) {
 	}
 }
 
+// table driven test for testing the IsValid function
 func TestIsValid(t *testing.T) {
-	// create test produce struct that has valid values
-	produce := produce_api.Produce{
-		Name:  "testing_123",
-		Code:  "ABCD-1234-EFGH-5678",
-		Price: 12.34,
+	// create a map for the tests, with the key being the name of the test
+	tests := map[string]struct {
+		input      produce_api.Produce
+		inputValid bool // indicates whether the input is designed to be valid or not.
+	}{
+		"valid produce":  {input: produce_api.Produce{Name: "Testing", Code: "ABCD-1234-EFGH-5678", Price: 1.24}, inputValid: true},
+		"invalid code":   {input: produce_api.Produce{Name: "InvalidCode", Code: "ABCD-12-EF-5678", Price: 1.24}, inputValid: false},
+		"negative price": {input: produce_api.Produce{Name: "InvalidPRice", Code: "ABCD-1234-EFGH-5678", Price: -1.00}, inputValid: false},
 	}
 
-	err := produce_api.IsValid(produce)
-	if err != nil {
-		t.Errorf("IsValid believes that this produce struct is invalid, something is wrong.")
-	}
-}
+	// run tests
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := produce_api.IsValid(test.input)
 
-// This is the opposite of TestIsValid; purposefully passes in an invalid produce cod
-func TestIsNotValidCode(t *testing.T) {
-	// create produce item with an invalid code
-	produce := produce_api.Produce{
-		Name:  "testing_123",
-		Code:  "ThisIsNotAValidCode",
-		Price: 12.34,
-	}
-
-	err := produce_api.IsValid(produce)
-	if err == nil { // err should not be nil, so check if it is
-		t.Errorf("IsValid believes this is a valid produce struct, something is wrong.")
-	}
-}
-
-// makes sure IsValid catches a negative value price
-func TestIsNotValidPrice(t *testing.T) {
-	// create produce item with an invalid price
-	produce := produce_api.Produce{
-		Name:  "testing_123",
-		Code:  "ABCD-1234-EFGH-5678",
-		Price: -1.00,
-	}
-
-	err := produce_api.IsValid(produce)
-	if err == nil {
-		t.Errorf("IsValid believes this is a valid produce struct, something is wrong.")
+			// check that err is not nil
+			if test.inputValid {
+				if err != nil {
+					t.Errorf("IsValid believes that this produce struct is invalid, something is wrong.")
+				}
+			} else { // when input is designed not to be valid, check if err is nil
+				if err == nil {
+					t.Errorf("IsValid believes this is a valid produce struct, something is wrong.")
+				}
+			}
+		})
 	}
 }
