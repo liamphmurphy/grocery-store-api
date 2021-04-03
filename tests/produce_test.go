@@ -6,19 +6,43 @@ import (
 	"github.com/murnux/grocery-store-api/produce_api"
 )
 
-func TestCreateProduce(t *testing.T) {
-	// create expected struct
+// table driven tests for CreateProduce
+func TestCreateProduct(t *testing.T) {
+	// expected produce for the valid produce test
 	expectedProduce := produce_api.Produce{
-		Name:  "testing_123",
+		Name:  "Test Produce",
 		Code:  "ABCD-1234-EFGH-5678",
 		Price: 12.34,
 	}
 
-	// test the CreateProduce method
-	testProduce, _ := produce_api.CreateProduce("testing_123", "ABCD-1234-EFGH-5678", 12.34)
+	tests := map[string]struct {
+		name       string
+		code       string
+		price      float64
+		expected   produce_api.Produce
+		inputValid bool
+	}{
+		"create valid produce": {name: "Test Produce", code: "abcd-1234-EFGH-5678", price: 12.34, expected: expectedProduce, inputValid: true},
+		"nil produce":          {name: "Test Invalid Produce", code: "ABC-123-343-bfe", price: 12.34, expected: produce_api.Produce{}, inputValid: false},
+	}
 
-	if !expectedProduce.Compare(testProduce) {
-		t.Errorf("The test produce struct does not match the expected produce struct.")
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			newProduce, err := produce_api.CreateProduce(test.name, test.code, test.price)
+
+			// conditions for error when the input is valid
+			if test.inputValid {
+				if !newProduce.Compare(test.expected) {
+					t.Errorf("Expected: %v but got: %v", test.expected, newProduce)
+				} else if err != nil {
+					t.Errorf("Ran into the following error: %v", err)
+				}
+			} else { // conditions for error when the input is NOT valid
+				if err == nil {
+					t.Errorf("An error should have been returned, but the error is nil.")
+				}
+			}
+		})
 	}
 }
 
